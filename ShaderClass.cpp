@@ -19,7 +19,6 @@ Shader::Shader(const char* vertexFile, const char* fragmentFile)
 {
 	std::string vertexCode = get_file_contents(vertexFile);
 	std::string fragmentCode = get_file_contents(fragmentFile);
-
 	const char* vertexSource = vertexCode.c_str();
 	const char* fragmentSource = fragmentCode.c_str();
 
@@ -33,43 +32,60 @@ Shader::Shader(const char* vertexFile, const char* fragmentFile)
 	glCompileShader(fragmentShader);
 	compileErrors(fragmentShader, "FRAGMENT");
 	
-	ID = glCreateProgram();
-	glAttachShader(ID, vertexShader);
-	glAttachShader(ID, fragmentShader);
-	glLinkProgram(ID);
-	compileErrors(ID, "PROGRAM");
+	m_ID = glCreateProgram();
+	glAttachShader(m_ID, vertexShader);
+	glAttachShader(m_ID, fragmentShader);
+	glLinkProgram(m_ID);
+	compileErrors(m_ID, "PROGRAM");
 
 	glDeleteShader(vertexShader);
 	glDeleteShader(fragmentShader);
 }
 
-void Shader::Activate() {
-	glUseProgram(ID);
+void Shader::Activate()
+{
+	glUseProgram(m_ID);
 }
 
-void Shader::Delete() {
-	glDeleteProgram(ID);
+void Shader::Delete()
+{
+	glDeleteProgram(m_ID);
 }
 
-void Shader::compileErrors(unsigned int id, const char* type)
+GLint Shader::GetUniformLocation(std::string uniformName)
+{
+	if (m_UniformMap.find(uniformName) != m_UniformMap.end())
+	{
+		return m_UniformMap[uniformName];
+	}
+	GLint location = glGetUniformLocation(m_ID, uniformName.c_str());
+	if (location == -1)
+	{
+		std::cout << "WARNING: UNIFORM \"" << uniformName << "\" DOES NOT EXIST" << std::endl;
+	}
+	m_UniformMap[uniformName] = location;
+	return location;
+}
+
+void Shader::compileErrors(unsigned int m_ID, const char* type)
 {
 	GLint success;
 	char infoLog[1024];
 
 	if (type != "PROGRAM")
 	{
-		glGetShaderiv(id, GL_COMPILE_STATUS, &success);
+		glGetShaderiv(m_ID, GL_COMPILE_STATUS, &success);
 		if (success == GL_FALSE) {
-			glGetShaderInfoLog(id, 1024, NULL, infoLog);
+			glGetShaderInfoLog(m_ID, 1024, NULL, infoLog);
 			std::cout<< "SHADER_COMPILATION_ERROR for: " << std::string(type) << std::endl << std::string(infoLog) << std::endl;
 		}
 	}
 	else
 	{
-		glGetProgramiv(id, GL_LINK_STATUS, &success);
+		glGetProgramiv(m_ID, GL_LINK_STATUS, &success);
 		if (success == GL_FALSE)
 		{
-			glGetProgramInfoLog(id, 1024, NULL, infoLog);
+			glGetProgramInfoLog(m_ID, 1024, NULL, infoLog);
 			std::cout << "PROGRAM_LINKING_ERROR: " + std::string(infoLog) + "\n";
 		}
 	}

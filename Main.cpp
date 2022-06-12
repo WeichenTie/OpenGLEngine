@@ -16,7 +16,6 @@
 int main() {
 	// Start up GLFW
 	glfwInit();
-
 	// Tell GLFW what version of OpneGL we are using
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -66,7 +65,7 @@ int main() {
 	VBO1.Unbind();
 	EBO1.Unbind();
 
-	GLuint uniID = glGetUniformLocation(shaderProgram.ID, "uScale");
+	GLuint uniID = shaderProgram.GetUniformLocation("uScale");
 
 	int widthImg, heightImg, numColCh;
 	stbi_set_flip_vertically_on_load(true);
@@ -76,7 +75,7 @@ int main() {
 	tex2D.SetTexParameters(GL_NEAREST, GL_NEAREST, GL_REPEAT, GL_REPEAT);
 	tex2D.LoadImage("pop_cat.png", true);
 
-	GLuint tex0Uni = glGetUniformLocation(shaderProgram.ID, "tex0");
+	GLuint tex0Uni = shaderProgram.GetUniformLocation("tex0");
 	shaderProgram.Activate();
 	glUniform1i(tex0Uni, 0);
 
